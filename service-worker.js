@@ -1,6 +1,6 @@
 const CACHE_NAME = 'iec60034-v1';
 const urlsToCache = [
-  '/iec60034-Calculator/',
+  '/',
   '/iec60034-Calculator/index.html',
   '/iec60034-Calculator/manifest.json',
   '/iec60034-Calculator/icon-192.png',
