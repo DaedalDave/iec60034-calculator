@@ -1,10 +1,10 @@
 const CACHE_NAME = 'iec60034-v1';
 const urlsToCache = [
   '/',
-  '/IEC60034-Calculator/index.html',
-  '/IEC60034-Calculator/manifest.json'
-  '/IEC60034-Calculator/icon-192.png'
-  '/IEC60034-Calculator/icon-512.png'
+  '/iec60034-Calculator/index.html',
+  '/iec60034-Calculator/manifest.json'
+  '/iec60034-Calculator/icon-192.png'
+  '/iec60034-Calculator/icon-512.png'
 ];
 
 // Install event
