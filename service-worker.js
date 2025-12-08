@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iec60034-v1';
+const CACHE_NAME = 'iec60034-v2';
 const urlsToCache = [
   '/iec60034-calculator/',
   '/iec60034-calculator/index.html',
