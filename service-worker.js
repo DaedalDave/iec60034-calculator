@@ -5,10 +5,10 @@ const urlsToCache = [
   '/iec60034-calculator/manifest.json',
   '/iec60034-calculator/icon-192.png',
   '/iec60034-calculator/icon-512.png',
-  'https://unpkg.com/react@18/umd/react.production.min.js',
-  'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://cdn.tailwindcss.com'
+  '/iec60034-calculator/assets/react.production.min.js',
+  '/iec60034-calculator/assets/react-dom.production.min.js',
+  '/iec60034-calculator/assets/babel.min.js',
+  '/iec60034-calculator/assets/tailwind.css'
 ];
 
 // Install event
