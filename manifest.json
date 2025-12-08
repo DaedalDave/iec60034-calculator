@@ -2,7 +2,7 @@
   "name": "IEC60034 Calculator",
   "short_name": "IEC60034",
   "description": "Temperature and Resistance Calculator based on IEC60034 standard",
-  "start_url": "/",
+  "start_url": "/iec60034-calculator/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4F46E5",
