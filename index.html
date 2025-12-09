@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <base href="/iec60034-calculator/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#4F46E5">
     <meta name="description" content="IEC60034 Temperature and Resistance Calculator">
+    <base href="/iec60034-calculator/">
     <title>IEC60034 Calculator</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
     <!-- Icons -->
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
     
     <script crossorigin src="assets/react.production.min.js"></script>
     <script crossorigin src="assets/react-dom.production.min.js"></script>
     <script src="assets/babel.min.js"></script>
-    <script src="assets/tailwind.css"></script>
+    <link rel="stylesheet" href="assets/tailwind.css">
     
     <style>
         body { margin: 0; padding: 0; }
@@ -51,7 +53,7 @@
             const [material, setMaterial] = useState('copper');
 
             const materials = {
-                copper: { name: 'Copper', k: 235 },
+                copper: { name: 'Copper', k: 234.5 },
                 aluminum: { name: 'Aluminum', k: 225 }
             };
 
@@ -245,7 +247,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
+                navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('Service Worker registered'))
                     .catch(err => console.log('Service Worker registration failed'));
             });
