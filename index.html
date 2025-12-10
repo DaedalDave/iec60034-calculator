@@ -229,43 +229,43 @@
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 >
-                    <div className="max-w-md mx-auto relative">
+                    <div className="max-w-md mx-auto relative pb-8">
                         {/* Page Indicator */}
-                        <div className="flex justify-center gap-2 mb-4">
+                        <div className="flex justify-center gap-2 mb-2 pt-2">
                             <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 0 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
                             <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 1 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
                         </div>
 
                         {/* Swipe hint */}
-                        <div className="text-center text-xs text-gray-500 mb-4">
+                        <div className="text-center text-xs text-gray-500 mb-2">
                             ← Swipe to navigate →
                         </div>
 
-                        <div className="relative" style={{ minHeight: '600px' }}>
+                        <div className="relative" style={{ minHeight: 'auto' }}>
                             {/* Page 1: Temperature Calculator */}
                             <div 
                                 className={`absolute w-full transition-all duration-300 ${
-                                    currentPage === 0 ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
+                                    currentPage === 0 ? 'translate-x-0 opacity-100 z-10' : '-translate-x-full opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="bg-white rounded-2xl shadow-xl p-6">
-                                    <div className="flex items-center justify-center mb-6">
+                                <div className="bg-white rounded-2xl shadow-xl p-4">
+                                    <div className="flex items-center justify-center mb-4">
                                         <div className="w-8 h-8 text-indigo-600 mr-3"><Calculator /></div>
-                                        <h1 className="text-xl font-bold text-gray-800">IEC60034 Temp/Resistance</h1>
+                                        <h1 className="text-lg font-bold text-gray-800">IEC60034 Temp/Resistance</h1>
                                     </div>
                                     
-                                    <p className="text-sm text-gray-600 text-center mb-6">
+                                    <p className="text-xs text-gray-600 text-center mb-4">
                                         Enter any 3 values to calculate the 4th
                                     </p>
 
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <div className="mb-3">
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">
                                             Conductor Material
                                         </label>
                                         <select
                                             value={material}
                                             onChange={(e) => setMaterial(e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         >
                                             {Object.entries(materials).map(([key, val]) => (
                                                 <option key={key} value={key}>
@@ -275,9 +275,9 @@
                                         </select>
                                     </div>
 
-                                    <div className="space-y-4 mb-6">
+                                    <div className="space-y-3 mb-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Initial Resistance R₁ (Ω)
                                             </label>
                                             <input
@@ -291,7 +291,7 @@
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Final Resistance R₂ (Ω)
                                             </label>
                                             <input
@@ -305,7 +305,7 @@
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Initial Temperature T₁ (°C)
                                             </label>
                                             <input
@@ -319,7 +319,7 @@
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Final Temperature T₂ (°C)
                                             </label>
                                             <input
@@ -333,29 +333,29 @@
                                         </div>
                                     </div>
 
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
                                         <p className="text-xs text-blue-800">
                                             💡 <strong>Tip:</strong> Leave ONE field empty and fill the other three.
                                         </p>
                                     </div>
 
-                                    <div className="flex gap-3 mb-6">
+                                    <div className="flex gap-3 mb-3">
                                         <button
                                             onClick={calculateMissing}
-                                            className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md"
+                                            className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md text-sm"
                                         >
                                             Calculate
                                         </button>
                                         <button
                                             onClick={reset}
-                                            className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                            className="px-5 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
                                         >
                                             Reset
                                         </button>
                                     </div>
 
-                                    <div className="p-4 bg-gray-50 rounded-lg">
-                                        <h3 className="text-xs font-semibold text-gray-700 mb-2">IEC60034 Formula:</h3>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <h3 className="text-xs font-semibold text-gray-700 mb-1">IEC60034 Formula:</h3>
                                         <p className="text-xs text-gray-600 font-mono">
                                             R₂/R₁ = (k + T₂)/(k + T₁)
                                         </p>
@@ -366,22 +366,22 @@
                             {/* Page 2: Resistance Average Calculator */}
                             <div 
                                 className={`absolute w-full transition-all duration-300 ${
-                                    currentPage === 1 ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
+                                    currentPage === 1 ? 'translate-x-0 opacity-100 z-10' : 'translate-x-full opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="bg-white rounded-2xl shadow-xl p-6">
-                                    <div className="flex items-center justify-center mb-6">
+                                <div className="bg-white rounded-2xl shadow-xl p-4">
+                                    <div className="flex items-center justify-center mb-4">
                                         <div className="w-8 h-8 text-indigo-600 mr-3"><TrendingUp /></div>
-                                        <h1 className="text-xl font-bold text-gray-800">Resistance Analyzer</h1>
+                                        <h1 className="text-lg font-bold text-gray-800">Resistance Analyzer</h1>
                                     </div>
                                     
-                                    <p className="text-sm text-gray-600 text-center mb-6">
+                                    <p className="text-xs text-gray-600 text-center mb-4">
                                         Calculate average and check ±1% tolerance
                                     </p>
 
-                                    <div className="space-y-4 mb-6">
+                                    <div className="space-y-3 mb-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Resistance 1 (Ω)
                                             </label>
                                             <input
@@ -395,7 +395,7 @@
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Resistance 2 (Ω)
                                             </label>
                                             <input
@@ -409,7 +409,7 @@
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
                                                 Resistance 3 (Ω)
                                             </label>
                                             <input
@@ -423,44 +423,44 @@
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 mb-6">
+                                    <div className="flex gap-3 mb-4">
                                         <button
                                             onClick={calculateAverage}
-                                            className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md"
+                                            className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md text-sm"
                                         >
                                             Analyze
                                         </button>
                                         <button
                                             onClick={resetPage2}
-                                            className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                            className="px-5 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
                                         >
                                             Reset
                                         </button>
                                     </div>
 
                                     {average !== null && (
-                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
-                                            <h2 className="text-lg font-bold text-gray-800 mb-3">Results</h2>
+                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200 mb-3">
+                                            <h2 className="text-base font-bold text-gray-800 mb-2">Results</h2>
                                             
-                                            <div className="space-y-3">
+                                            <div className="space-y-2">
                                                 <div className="flex justify-between items-center pb-2 border-b border-green-200">
-                                                    <span className="text-gray-700 font-medium">Average:</span>
-                                                    <span className="text-xl font-bold text-indigo-600">{average.toFixed(4)} Ω</span>
+                                                    <span className="text-xs text-gray-700 font-medium">Average:</span>
+                                                    <span className="text-lg font-bold text-indigo-600">{average.toFixed(4)} Ω</span>
                                                 </div>
                                                 
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-700 font-medium">Upper Limit (+1%):</span>
-                                                    <span className="text-lg font-semibold text-orange-600">{upperLimit.toFixed(4)} Ω</span>
+                                                    <span className="text-xs text-gray-700 font-medium">Upper Limit (+1%):</span>
+                                                    <span className="text-sm font-semibold text-orange-600">{upperLimit.toFixed(4)} Ω</span>
                                                 </div>
                                                 
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-700 font-medium">Lower Limit (-1%):</span>
-                                                    <span className="text-lg font-semibold text-orange-600">{lowerLimit.toFixed(4)} Ω</span>
+                                                    <span className="text-xs text-gray-700 font-medium">Lower Limit (-1%):</span>
+                                                    <span className="text-sm font-semibold text-orange-600">{lowerLimit.toFixed(4)} Ω</span>
                                                 </div>
                                             </div>
 
                                             {(isOutOfRange(res1) || isOutOfRange(res2) || isOutOfRange(res3)) && (
-                                                <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                                                <div className="mt-3 p-2 bg-red-100 border border-red-300 rounded-lg">
                                                     <p className="text-xs text-red-800 font-semibold">
                                                         ⚠️ Warning: One or more values are outside ±1% tolerance!
                                                     </p>
@@ -469,7 +469,7 @@
                                         </div>
                                     )}
 
-                                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                                    <div className="p-3 bg-gray-50 rounded-lg">
                                         <p className="text-xs text-gray-600">
                                             <strong>Note:</strong> Values outside the ±1% range will be highlighted in red.
                                         </p>
