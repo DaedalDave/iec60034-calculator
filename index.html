@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="description" content="IEC60034 Temperature and Resistance Calculator">
+    <base href="/iec60034-calculator/">
+    <title>IEC60034 Calculator</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+    
+    <script crossorigin src="assets/react.production.min.js"></script>
+    <script crossorigin src="assets/react-dom.production.min.js"></script>
+    <script src="assets/babel.min.js"></script>
+    <script src="assets/tailwind.css"></script>
+    
+    <style>
+        body { margin: 0; padding: 0; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const Calculator = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2"/>
+                <line x1="8" y1="6" x2="16" y2="6"/>
+                <line x1="16" y1="14" x2="16" y2="14.01"/>
+                <line x1="12" y1="14" x2="12" y2="14.01"/>
+                <line x1="8" y1="14" x2="8" y2="14.01"/>
+                <line x1="16" y1="18" x2="16" y2="18.01"/>
+                <line x1="12" y1="18" x2="12" y2="18.01"/>
+                <line x1="8" y1="18" x2="8" y2="18.01"/>
+            </svg>
+        );
+
+        const Thermometer = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>
+            </svg>
+        );
+
+        const TrendingUp = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+            </svg>
+        );
+
+        function TempCalculator() {
+            const [currentPage, setCurrentPage] = useState(0);
+            const [touchStart, setTouchStart] = useState(null);
+            const [touchEnd, setTouchEnd] = useState(null);
+
+            // Page 1 states
+            const [R1, setR1] = useState('');
+            const [R2, setR2] = useState('');
+            const [T1, setT1] = useState('');
+            const [T2, setT2] = useState('');
+            const [material, setMaterial] = useState('copper');
+            const [calculatedField, setCalculatedField] = useState(null);
+
+            // Page 2 states
+            const [res1, setRes1] = useState('');
+            const [res2, setRes2] = useState('');
+            const [res3, setRes3] = useState('');
+            const [average, setAverage] = useState(null);
+            const [upperLimit, setUpperLimit] = useState(null);
+            const [lowerLimit, setLowerLimit] = useState(null);
+
+            const materials = {
+                copper: { name: 'Copper', k: 235 },
+                aluminum: { name: 'Aluminum', k: 225 }
+            };
+
+            const minSwipeDistance = 50;
+
+            const onTouchStart = (e) => {
+                setTouchEnd(null);
+                setTouchStart(e.targetTouches[0].clientX);
+            };
+
+            const onTouchMove = (e) => {
+                setTouchEnd(e.targetTouches[0].clientX);
+            };
+
+            const onTouchEnd = () => {
+                if (!touchStart || !touchEnd) return;
+                
+                const distance = touchStart - touchEnd;
+                const isLeftSwipe = distance > minSwipeDistance;
+                const isRightSwipe = distance < -minSwipeDistance;
+                
+                if (isLeftSwipe && currentPage === 0) {
+                    setCurrentPage(1);
+                }
+                if (isRightSwipe && currentPage === 1) {
+                    setCurrentPage(0);
+                }
+            };
+
+            const calculateMissing = () => {
+                const r1 = R1 === '' ? null : parseFloat(R1);
+                const r2 = R2 === '' ? null : parseFloat(R2);
+                const t1 = T1 === '' ? null : parseFloat(T1);
+                const t2 = T2 === '' ? null : parseFloat(T2);
+                const k = materials[material].k;
+
+                const filled = [r1, r2, t1, t2].filter(v => v !== null);
+                const empty = [r1, r2, t1, t2].filter(v => v === null);
+
+                if (filled.length !== 3 || empty.length !== 1) {
+                    alert('Please enter exactly 3 values and leave 1 empty to calculate');
+                    return;
+                }
+
+                if (filled.some(v => isNaN(v))) {
+                    alert('Please enter valid numbers');
+                    return;
+                }
+
+                try {
+                    if (r1 === null) {
+                        if (r2 <= 0) throw new Error('R2 must be positive');
+                        const result = r2 * (k + t1) / (k + t2);
+                        if (result <= 0 || !isFinite(result)) throw new Error('Invalid calculation result');
+                        setR1(result.toFixed(4));
+                        setCalculatedField('R1');
+                    } 
+                    else if (r2 === null) {
+                        if (r1 <= 0) throw new Error('R1 must be positive');
+                        const result = r1 * (k + t2) / (k + t1);
+                        if (result <= 0 || !isFinite(result)) throw new Error('Invalid calculation result');
+                        setR2(result.toFixed(4));
+                        setCalculatedField('R2');
+                    } 
+                    else if (t1 === null) {
+                        if (r1 <= 0 || r2 <= 0) throw new Error('Resistances must be positive');
+                        const result = (r1 * (k + t2) / r2) - k;
+                        if (!isFinite(result)) throw new Error('Invalid calculation result');
+                        setT1(result.toFixed(2));
+                        setCalculatedField('T1');
+                    } 
+                    else if (t2 === null) {
+                        if (r1 <= 0 || r2 <= 0) throw new Error('Resistances must be positive');
+                        const result = (r2 / r1) * (k + t1) - k;
+                        if (!isFinite(result)) throw new Error('Invalid calculation result');
+                        setT2(result.toFixed(2));
+                        setCalculatedField('T2');
+                    }
+                } catch (error) {
+                    alert(error.message || 'Calculation error - please check your values');
+                }
+            };
+
+            const calculateAverage = () => {
+                const r1 = parseFloat(res1);
+                const r2 = parseFloat(res2);
+                const r3 = parseFloat(res3);
+
+                if (isNaN(r1) || isNaN(r2) || isNaN(r3)) {
+                    alert('Please enter valid numbers for all three resistances');
+                    return;
+                }
+
+                const avg = (r1 + r2 + r3) / 3;
+                const upper = avg * 1.01;
+                const lower = avg * 0.99;
+
+                setAverage(avg);
+                setUpperLimit(upper);
+                setLowerLimit(lower);
+            };
+
+            const reset = () => {
+                setR1('');
+                setR2('');
+                setT1('');
+                setT2('');
+                setCalculatedField(null);
+            };
+
+            const resetPage2 = () => {
+                setRes1('');
+                setRes2('');
+                setRes3('');
+                setAverage(null);
+                setUpperLimit(null);
+                setLowerLimit(null);
+            };
+
+            const isOutOfRange = (value) => {
+                if (!value || !average) return false;
+                const val = parseFloat(value);
+                return val > upperLimit || val < lowerLimit;
+            };
+
+            const getInputClass = (value) => {
+                const baseClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
+                if (isOutOfRange(value)) {
+                    return `${baseClass} bg-red-100 border-red-500`;
+                }
+                return `${baseClass} border-gray-300`;
+            };
+
+            const getPage1InputClass = (fieldName) => {
+                const baseClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
+                if (calculatedField === fieldName) {
+                    return `${baseClass} bg-green-100 border-green-500`;
+                }
+                return `${baseClass} border-gray-300`;
+            };
+
+            return (
+                <div 
+                    className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 overflow-hidden"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
+                    <div className="max-w-md mx-auto relative">
+                        {/* Page Indicator */}
+                        <div className="flex justify-center gap-2 mb-4">
+                            <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 0 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
+                            <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 1 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
+                        </div>
+
+                        {/* Swipe hint */}
+                        <div className="text-center text-xs text-gray-500 mb-4">
+                            ← Swipe to navigate →
+                        </div>
+
+                        <div className="relative" style={{ minHeight: '600px' }}>
+                            {/* Page 1: Temperature Calculator */}
+                            <div 
+                                className={`absolute w-full transition-all duration-300 ${
+                                    currentPage === 0 ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
+                                }`}
+                            >
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <div className="flex items-center justify-center mb-6">
+                                        <div className="w-8 h-8 text-indigo-600 mr-3"><Calculator /></div>
+                                        <h1 className="text-xl font-bold text-gray-800">IEC60034 Temp/Resistance</h1>
+                                    </div>
+                                    
+                                    <p className="text-sm text-gray-600 text-center mb-6">
+                                        Enter any 3 values to calculate the 4th
+                                    </p>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Conductor Material
+                                        </label>
+                                        <select
+                                            value={material}
+                                            onChange={(e) => setMaterial(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        >
+                                            {Object.entries(materials).map(([key, val]) => (
+                                                <option key={key} value={key}>
+                                                    {val.name} (k = {val.k})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Initial Resistance R₁ (Ω)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={R1}
+                                                onChange={(e) => setR1(e.target.value)}
+                                                placeholder="e.g., 100"
+                                                className={getPage1InputClass('R1')}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Final Resistance R₂ (Ω)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={R2}
+                                                onChange={(e) => setR2(e.target.value)}
+                                                placeholder="e.g., 115"
+                                                className={getPage1InputClass('R2')}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Initial Temperature T₁ (°C)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={T1}
+                                                onChange={(e) => setT1(e.target.value)}
+                                                placeholder="e.g., 25"
+                                                className={getPage1InputClass('T1')}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Final Temperature T₂ (°C)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={T2}
+                                                onChange={(e) => setT2(e.target.value)}
+                                                placeholder="e.g., 75"
+                                                className={getPage1InputClass('T2')}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                        <p className="text-xs text-blue-800">
+                                            💡 <strong>Tip:</strong> Leave ONE field empty and fill the other three.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-3 mb-6">
+                                        <button
+                                            onClick={calculateMissing}
+                                            className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md"
+                                        >
+                                            Calculate
+                                        </button>
+                                        <button
+                                            onClick={reset}
+                                            className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <h3 className="text-xs font-semibold text-gray-700 mb-2">IEC60034 Formula:</h3>
+                                        <p className="text-xs text-gray-600 font-mono">
+                                            R₂/R₁ = (k + T₂)/(k + T₁)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Page 2: Resistance Average Calculator */}
+                            <div 
+                                className={`absolute w-full transition-all duration-300 ${
+                                    currentPage === 1 ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
+                                }`}
+                            >
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <div className="flex items-center justify-center mb-6">
+                                        <div className="w-8 h-8 text-indigo-600 mr-3"><TrendingUp /></div>
+                                        <h1 className="text-xl font-bold text-gray-800">Resistance Analyzer</h1>
+                                    </div>
+                                    
+                                    <p className="text-sm text-gray-600 text-center mb-6">
+                                        Calculate average and check ±1% tolerance
+                                    </p>
+
+                                    <div className="space-y-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Resistance 1 (Ω)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={res1}
+                                                onChange={(e) => setRes1(e.target.value)}
+                                                placeholder="e.g., 100.5"
+                                                className={getInputClass(res1)}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Resistance 2 (Ω)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={res2}
+                                                onChange={(e) => setRes2(e.target.value)}
+                                                placeholder="e.g., 101.2"
+                                                className={getInputClass(res2)}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Resistance 3 (Ω)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={res3}
+                                                onChange={(e) => setRes3(e.target.value)}
+                                                placeholder="e.g., 99.8"
+                                                className={getInputClass(res3)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 mb-6">
+                                        <button
+                                            onClick={calculateAverage}
+                                            className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md"
+                                        >
+                                            Analyze
+                                        </button>
+                                        <button
+                                            onClick={resetPage2}
+                                            className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+
+                                    {average !== null && (
+                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200">
+                                            <h2 className="text-lg font-bold text-gray-800 mb-3">Results</h2>
+                                            
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center pb-2 border-b border-green-200">
+                                                    <span className="text-gray-700 font-medium">Average:</span>
+                                                    <span className="text-xl font-bold text-indigo-600">{average.toFixed(4)} Ω</span>
+                                                </div>
+                                                
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-700 font-medium">Upper Limit (+1%):</span>
+                                                    <span className="text-lg font-semibold text-orange-600">{upperLimit.toFixed(4)} Ω</span>
+                                                </div>
+                                                
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-700 font-medium">Lower Limit (-1%):</span>
+                                                    <span className="text-lg font-semibold text-orange-600">{lowerLimit.toFixed(4)} Ω</span>
+                                                </div>
+                                            </div>
+
+                                            {(isOutOfRange(res1) || isOutOfRange(res2) || isOutOfRange(res3)) && (
+                                                <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                                                    <p className="text-xs text-red-800 font-semibold">
+                                                        ⚠️ Warning: One or more values are outside ±1% tolerance!
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                                        <p className="text-xs text-gray-600">
+                                            <strong>Note:</strong> Values outside the ±1% range will be highlighted in red.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TempCalculator />, document.getElementById('root'));
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
