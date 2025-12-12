@@ -2,7 +2,7 @@
   "name": "IEC60034 Calculator",
   "short_name": "Res/Rise",
   "description": "Temperature and Resistance Calculator based on IEC60034 standard",
-  "start_url": "./index.html",
+  "start_url": "iec60034-calculator/index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
