@@ -323,7 +323,7 @@
 
             return (
                 <div 
-                    className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
+                    className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 overflow-hidden"
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
@@ -343,7 +343,7 @@
                                     currentPage === 0 ? 'translate-x-0 opacity-100 z-10' : '-translate-x-full opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="bg-white rounded-2xl shadow-xl p-4">
+                                <div className="bg-white rounded-2xl shadow-xl p-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                                     <div className="flex items-center justify-center mb-4">
                                         <div className="w-8 h-8 text-indigo-600 mr-3"><Calculator /></div>
                                         <h1 className="text-lg font-bold text-gray-800">IEC60034 Temp/Resistance</h1>
@@ -464,7 +464,7 @@
                                     currentPage === 1 ? 'translate-x-0 opacity-100 z-10' : currentPage === 0 ? 'translate-x-full opacity-0 pointer-events-none z-0' : '-translate-x-full opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="bg-white rounded-2xl shadow-xl p-4">
+                                <div className="bg-white rounded-2xl shadow-xl p-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                                     <div className="flex items-center justify-center mb-4">
                                         <div className="w-8 h-8 text-indigo-600 mr-3"><TrendingUp /></div>
                                         <h1 className="text-lg font-bold text-gray-800">Resistance Analyzer</h1>
@@ -578,7 +578,7 @@
                                     currentPage === 2 ? 'translate-x-0 opacity-100 z-10' : 'translate-x-full opacity-0 pointer-events-none z-0'
                                 }`}
                             >
-                                <div className="bg-white rounded-2xl shadow-xl p-4">
+                                <div className="bg-white rounded-2xl shadow-xl p-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                                     <div className="flex items-center justify-center mb-4">
                                         <div className="w-8 h-8 text-indigo-600 mr-3"><Settings /></div>
                                         <h1 className="text-lg font-bold text-gray-800">Machine Speed Calculator</h1>
