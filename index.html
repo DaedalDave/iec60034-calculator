@@ -23,6 +23,34 @@
     <script src="./assets/tailwind.css"></script>
     
     <style>
+            .formula-title {
+                font-weight: bold;
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+                color: #111827;
+                text-align: center;
+            }
+            
+            .formula-legend {
+                margin-top: 15px;
+                font-size: 0.9rem;
+                color: #4b5563;
+                line-height: 1.5;
+                width: 100%;
+                border-top: 1px dashed #d1d5db;
+                padding-top: 10px;
+            }
+            
+            .legend-item {
+                display: block;
+                margin-bottom: 2px;
+            }
+            
+            /* Keeps the "Where," bold */
+            .legend-item strong {
+                color: #1f2937;
+            }    
+                    
             .formula-card-content {
                 display: flex;
                 flex-direction: column;
@@ -530,7 +558,9 @@
                                         </button>
                                     </div>
 
-                                    <div class="formula-card-content">
+                                   <div class="formula-card-content">
+                                        <div class="formula-title">IEC60034 Temperature Correction of Resistance Formula</div>
+                                    
                                         <div class="formula-display">
                                             <div class="fraction-container">
                                                 <div class="fraction-numerator">R<span class="sub">2</span></div>
@@ -541,6 +571,13 @@
                                                 <div class="fraction-numerator">k + T<span class="sub">2</span></div>
                                                 <div class="fraction-denominator">k + T<span class="sub">1</span></div>
                                             </div>
+                                        </div>
+                                    
+                                        <div class="formula-legend">
+                                            <span class="legend-item"><strong>Where:</strong></span>
+                                            <span class="legend-item">R<span class="sub">2</span> = Resistance at Temp T<span class="sub">2</span></span>
+                                            <span class="legend-item">R<span class="sub">1</span> = Resistance at Temp T<span class="sub">1</span></span>
+                                            <span class="legend-item">k = Reciprocal of temp. coefficient (235 for Copper)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -768,15 +805,24 @@
                                         </div>
                                     )}
 
-                                    <div class="formula-card-content">
-                                        <div class="formula-display">
-                                            <span>n = </span>
-                                            <div class="fraction-container">
-                                                <div class="fraction-numerator">120 &times; f</div>
-                                                <div class="fraction-denominator">p</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="formula-card-content">
+                        <div class="formula-title">Synchronous Speed Formula</div>
+                        
+                        <div class="formula-display">
+                            <span>n = </span>
+                            <div class="fraction-container">
+                                <div class="fraction-numerator">120 &times; f</div>
+                                <div class="fraction-denominator">p</div>
+                            </div>
+                        </div>
+                    
+                        <div class="formula-legend">
+                            <span class="legend-item"><strong>Where:</strong></span>
+                            <span class="legend-item">n = Synchronous speed (RPM)</span>
+                            <span class="legend-item">f = Frequency (Hz)</span>
+                            <span class="legend-item">p = Number of poles</span>
+                        </div>
+                    </div>
                                 </div>
                             </div>
                         </div>
