@@ -23,29 +23,51 @@
     <script src="./assets/tailwind.css"></script>
     
     <style>
-        body { margin: 0; padding: 0; }
-        .fraction-container {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 14px;
-            vertical-align: middle;
-        }
-        .fraction-numerator {
-            padding-bottom: 2px;
-        }
-        .fraction-denominator {
-            border-top: 1.5px solid #374151;
-            padding-top: 2px;
-            width: 100%;
-            text-align: center;
-        }
-        .formula-display {
-            font-family: monospace;
-            line-height: 1.2;
-            text-align: center;
-            font-size: 14px;
-        }
+            .formula-card-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 15px;
+                background: #f9fafb; /* Light background to make the formula pop */
+                border-radius: 8px;
+                margin: 10px 0;
+            }
+            
+            .formula-display {
+                font-family: "Times New Roman", Times, serif;
+                font-style: italic;
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                color: #1f2937; /* Dark gray for readability */
+            }
+            
+            .fraction-container {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                vertical-align: middle;
+            }
+            
+            .fraction-numerator {
+                padding: 0 5px 2px 5px;
+            }
+            
+            .fraction-denominator {
+                border-top: 1.5px solid #374151;
+                padding: 2px 5px 0 5px;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .sub {
+                font-style: normal;
+                font-size: 0.7em;
+                vertical-align: sub;
+                line-height: 0;
+            }
     </style>
 </head>
 <body>
@@ -508,11 +530,18 @@
                                         </button>
                                     </div>
 
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <h3 className="text-xs font-semibold text-gray-700 mb-1">IEC60034 Formula:</h3>
-                                        <p className="text-xs text-gray-600 font-mono">
-                                            R₂/R₁ = (k + T₂)/(k + T₁)
-                                        </p>
+                                    <div class="formula-card-content">
+                                        <div class="formula-display">
+                                            <div class="fraction-container">
+                                                <div class="fraction-numerator">R<span class="sub">2</span></div>
+                                                <div class="fraction-denominator">R<span class="sub">1</span></div>
+                                            </div>
+                                            <span> = </span>
+                                            <div class="fraction-container">
+                                                <div class="fraction-numerator">k + T<span class="sub">2</span></div>
+                                                <div class="fraction-denominator">k + T<span class="sub">1</span></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -739,14 +768,14 @@
                                         </div>
                                     )}
 
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <h3 className="text-xs font-semibold text-gray-700 mb-1">Synchronous Speed Formula:</h3>
-                                        <p className="text-xs text-gray-600 font-mono mb-1">
-                                            n = (120 × f) / p
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            Where: n = Speed (RPM), f = Frequency (Hz), p = Number of poles
-                                        </p>
+                                    <div class="formula-card-content">
+                                        <div class="formula-display">
+                                            <span>n = </span>
+                                            <div class="fraction-container">
+                                                <div class="fraction-numerator">120 &times; f</div>
+                                                <div class="fraction-denominator">p</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
