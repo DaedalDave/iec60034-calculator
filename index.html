@@ -107,6 +107,8 @@
             const [frequency, setFrequency] = useState('');
             const [poles, setPoles] = useState('');
             const [calculatedField3, setCalculatedField3] = useState(null);
+            const [speedWarning, setSpeedWarning] = useState(null);
+            const [frequencyWarning, setFrequencyWarning] = useState(null);
 
             const materials = {
                 copper: { name: 'Copper', k: 235 },
@@ -240,6 +242,10 @@
                 const f = frequency === '' ? null : parseFloat(frequency);
                 const p = poles === '' ? null : parseFloat(poles);
 
+                // Clear previous warnings
+                setSpeedWarning(null);
+                setFrequencyWarning(null);
+
                 const filled = [n, f, p].filter(v => v !== null);
                 const empty = [n, f, p].filter(v => v === null);
 
@@ -263,7 +269,7 @@
                             return;
                         }
                         const result = (120 * f) / p;
-                        setSpeed(Math.ceil(result * 100) / 100); // Round up to 2 decimals
+                        setSpeed(Math.round(result * 100) / 100); // Round to nearest, 2 decimals
                         setCalculatedField3('speed');
                     } 
                     else if (f === null) {
@@ -274,17 +280,46 @@
                             return;
                         }
                         const result = (n * p) / 120;
-                        setFrequency(Math.ceil(result * 100) / 100); // Round up to 2 decimals
+                        setFrequency(Math.round(result * 100) / 100); // Round to nearest, 2 decimals
                         setCalculatedField3('frequency');
                     } 
                     else if (p === null) {
                         // Calculate Poles: p = (120 × f) / n
                         const result = (120 * f) / n;
-                        const roundedPoles = Math.ceil(result);
-                        // Ensure it's a factor of 2
-                        const validPoles = roundedPoles % 2 === 0 ? roundedPoles : roundedPoles + 1;
-                        setPoles(validPoles);
+                        
+                        // Round to nearest integer
+                        let roundedPoles = Math.round(result);
+                        
+                        // Ensure it's even (factor of 2)
+                        if (roundedPoles % 2 !== 0) {
+                            // Find nearest even number
+                            const lowerEven = roundedPoles - 1;
+                            const upperEven = roundedPoles + 1;
+                            // Choose the even number closer to the original result
+                            roundedPoles = (Math.abs(result - lowerEven) < Math.abs(result - upperEven)) ? lowerEven : upperEven;
+                        }
+                        
+                        setPoles(roundedPoles);
                         setCalculatedField3('poles');
+                        
+                        // Perform sanity checks
+                        // Check 1: What frequency would result from these poles and the input speed?
+                        const calculatedFrequency = (n * roundedPoles) / 120;
+                        const frequencyDiff = Math.abs(calculatedFrequency - f);
+                        if (frequencyDiff > 0.5) {
+                            setFrequencyWarning(
+                                `Warning: With ${roundedPoles} poles and ${n} RPM, the frequency would be ${calculatedFrequency.toFixed(2)} Hz (differs by ${frequencyDiff.toFixed(2)} Hz from input ${f} Hz). This may not represent a realistic machine design.`
+                            );
+                        }
+                        
+                        // Check 2: What speed would result from these poles and the input frequency?
+                        const calculatedSpeed = (120 * f) / roundedPoles;
+                        const speedDiff = Math.abs(calculatedSpeed - n);
+                        if (speedDiff > 50) {
+                            setSpeedWarning(
+                                `Warning: With ${roundedPoles} poles and ${f} Hz, the speed would be ${calculatedSpeed.toFixed(2)} RPM (differs by ${speedDiff.toFixed(2)} RPM from input ${n} RPM). This may not represent a realistic machine design.`
+                            );
+                        }
                     }
                 } catch (error) {
                     alert('Calculation error - please check your values');
@@ -296,6 +331,8 @@
                 setFrequency('');
                 setPoles('');
                 setCalculatedField3(null);
+                setSpeedWarning(null);
+                setFrequencyWarning(null);
             };
 
             const isOutOfRange = (value) => {
@@ -676,6 +713,22 @@
                                         <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
                                             <p className="text-xs text-red-800 font-semibold">
                                                 ⚠️ Poles must be a factor of two and an integer number
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {frequencyWarning && (
+                                        <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                                            <p className="text-xs text-red-800 font-semibold">
+                                                ⚠️ {frequencyWarning}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {speedWarning && (
+                                        <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                                            <p className="text-xs text-red-800 font-semibold">
+                                                ⚠️ {speedWarning}
                                             </p>
                                         </div>
                                     )}
