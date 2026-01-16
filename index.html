@@ -46,7 +46,6 @@
                 margin-bottom: 2px;
             }
             
-            /* Keeps the "Where," bold */
             .legend-item strong {
                 color: #1f2937;
             }    
@@ -57,7 +56,7 @@
                 align-items: left;
                 justify-content: left;
                 padding: 15px;
-                background: #f9fafb; /* Light background to make the formula pop */
+                background: #f9fafb;
                 border-radius: 8px;
                 margin: 10px 0;
             }
@@ -69,7 +68,8 @@
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                color: #1f2937; /* Dark gray for readability */
+                color: #1f2937;
+                flex-wrap: wrap;
             }
             
             .fraction-container {
@@ -172,13 +172,14 @@
             const [speedWarning, setSpeedWarning] = useState(null);
             const [frequencyWarning, setFrequencyWarning] = useState(null);
 
-            // Page 4 states - NEW
+            // Page 4 states
             const [realPower, setRealPower] = useState('');
             const [apparentPower, setApparentPower] = useState('');
             const [powerFactor, setPowerFactor] = useState('');
             const [voltage, setVoltage] = useState('');
             const [current, setCurrent] = useState('');
             const [calculatedField4, setCalculatedField4] = useState(null);
+            const [reactivePower, setReactivePower] = useState(null);
 
             const materials = {
                 copper: { name: 'Copper', k: 235 },
@@ -203,23 +204,11 @@
                 const isLeftSwipe = distance > minSwipeDistance;
                 const isRightSwipe = distance < -minSwipeDistance;
                 
-                if (isLeftSwipe && currentPage === 0) {
-                    setCurrentPage(1);
+                if (isLeftSwipe && currentPage < 3) {
+                    setCurrentPage(currentPage + 1);
                 }
-                if (isLeftSwipe && currentPage === 1) {
-                    setCurrentPage(2);
-                }
-                if (isLeftSwipe && currentPage === 2) {
-                    setCurrentPage(3);
-                }
-                if (isRightSwipe && currentPage === 1) {
-                    setCurrentPage(0);
-                }
-                if (isRightSwipe && currentPage === 2) {
-                    setCurrentPage(1);
-                }
-                if (isRightSwipe && currentPage === 3) {
-                    setCurrentPage(2);
+                if (isRightSwipe && currentPage > 0) {
+                    setCurrentPage(currentPage - 1);
                 }
             };
 
@@ -318,7 +307,6 @@
                 const f = frequency === '' ? null : parseFloat(frequency);
                 const p = poles === '' ? null : parseFloat(poles);
 
-                // Clear previous warnings
                 setSpeedWarning(null);
                 setFrequencyWarning(null);
 
@@ -336,50 +324,38 @@
                 }
 
                 try {
-                    // Formula: n = (120 × f) / p
                     if (n === null) {
-                        // Calculate Speed: n = (120 × f) / p
-                        // Validate poles if provided
                         if (!Number.isInteger(p) || p % 2 !== 0) {
                             alert('Poles must be an integer and a factor of 2');
                             return;
                         }
                         const result = (120 * f) / p;
-                        setSpeed(Math.round(result * 100) / 100); // Round to nearest, 2 decimals
+                        setSpeed(Math.round(result * 100) / 100);
                         setCalculatedField3('speed');
                     } 
                     else if (f === null) {
-                        // Calculate Frequency: f = (n × p) / 120
-                        // Validate poles if provided
                         if (!Number.isInteger(p) || p % 2 !== 0) {
                             alert('Poles must be an integer and a factor of 2');
                             return;
                         }
                         const result = (n * p) / 120;
-                        setFrequency(Math.round(result * 100) / 100); // Round to nearest, 2 decimals
+                        setFrequency(Math.round(result * 100) / 100);
                         setCalculatedField3('frequency');
                     } 
                     else if (p === null) {
-                        // Calculate Poles: p = (120 × f) / n
                         const result = (120 * f) / n;
                         
-                        // Round to nearest integer
                         let roundedPoles = Math.round(result);
                         
-                        // Ensure it's even (factor of 2)
                         if (roundedPoles % 2 !== 0) {
-                            // Find nearest even number
                             const lowerEven = roundedPoles - 1;
                             const upperEven = roundedPoles + 1;
-                            // Choose the even number closer to the original result
                             roundedPoles = (Math.abs(result - lowerEven) < Math.abs(result - upperEven)) ? lowerEven : upperEven;
                         }
                         
                         setPoles(roundedPoles);
                         setCalculatedField3('poles');
                         
-                        // Perform sanity checks
-                        // Check 1: What frequency would result from these poles and the input speed?
                         const calculatedFrequency = (n * roundedPoles) / 120;
                         const frequencyDiff = Math.abs(calculatedFrequency - f);
                         if (frequencyDiff > 0.5) {
@@ -388,7 +364,6 @@
                             );
                         }
                         
-                        // Check 2: What speed would result from these poles and the input frequency?
                         const calculatedSpeed = (120 * f) / roundedPoles;
                         const speedDiff = Math.abs(calculatedSpeed - n);
                         if (speedDiff > 50) {
@@ -411,61 +386,96 @@
                 setFrequencyWarning(null);
             };
 
-            // NEW - Page 4 functions
-            const calculatePowerTriangle = () => {
+            const calculatePower = () => {
                 const P = realPower === '' ? null : parseFloat(realPower);
                 const S = apparentPower === '' ? null : parseFloat(apparentPower);
                 const pf = powerFactor === '' ? null : parseFloat(powerFactor);
                 const V = voltage === '' ? null : parseFloat(voltage);
                 const I = current === '' ? null : parseFloat(current);
 
-                const mainFilled = [P, S, pf].filter(v => v !== null);
-
-                if (mainFilled.length !== 2) {
-                    alert('Please enter exactly 2 of the 3 main values (P, S, Power Factor)');
+                // Check if using 3-phase calculation
+                if (V !== null && I !== null && !isNaN(V) && !isNaN(I) && V > 0 && I > 0) {
+                    // 3-phase calculation
+                    const calcS = Math.sqrt(3) * V * I / 1000; // Convert to kVA
+                    setApparentPower(calcS.toFixed(4));
+                    setCalculatedField4('apparentPower');
+                    
+                    if (pf !== null && !isNaN(pf) && pf > 0 && pf <= 1) {
+                        const calcP = Math.sqrt(3) * V * I * pf / 1000; // Convert to kW
+                        setRealPower(calcP.toFixed(4));
+                        
+                        // Calculate reactive power
+                        const sinTheta = Math.sqrt(1 - pf * pf);
+                        const Q = calcS * sinTheta;
+                        setReactivePower(Q.toFixed(4));
+                    } else if (P !== null && !isNaN(P) && P > 0) {
+                        const calcPF = P / calcS;
+                        if (calcPF > 1) {
+                            alert('Calculated power factor exceeds 1.0. Please check your values.');
+                            return;
+                        }
+                        setPowerFactor(calcPF.toFixed(4));
+                        setCalculatedField4('powerFactor');
+                        
+                        // Calculate reactive power
+                        const sinTheta = Math.sqrt(1 - calcPF * calcPF);
+                        const Q = calcS * sinTheta;
+                        setReactivePower(Q.toFixed(4));
+                    }
                     return;
                 }
 
-                if (mainFilled.some(v => isNaN(v) || v <= 0)) {
-                    alert('Please enter valid positive numbers');
+                // Standard power triangle calculation
+                const filled = [P, S, pf].filter(v => v !== null);
+                const empty = [P, S, pf].filter(v => v === null);
+
+                if (filled.length !== 2 || empty.length !== 1) {
+                    alert('Please enter exactly 2 of the 3 main values (P, S, cos θ)');
                     return;
                 }
 
-                if (pf !== null && (pf < 0 || pf > 1)) {
-                    alert('Power Factor must be between 0 and 1');
+                if (filled.some(v => isNaN(v))) {
+                    alert('Please enter valid numbers');
                     return;
                 }
 
                 try {
                     if (P === null) {
-                        setRealPower(Math.round(S * pf * 100) / 100);
+                        if (S <= 0 || pf <= 0 || pf > 1) throw new Error('Invalid values');
+                        const result = S * pf;
+                        setRealPower(result.toFixed(4));
                         setCalculatedField4('realPower');
+                        
+                        // Calculate reactive power
+                        const sinTheta = Math.sqrt(1 - pf * pf);
+                        const Q = S * sinTheta;
+                        setReactivePower(Q.toFixed(4));
                     } 
                     else if (S === null) {
-                        setApparentPower(Math.round((P / pf) * 100) / 100);
+                        if (P <= 0 || pf <= 0 || pf > 1) throw new Error('Invalid values');
+                        const result = P / pf;
+                        setApparentPower(result.toFixed(4));
                         setCalculatedField4('apparentPower');
+                        
+                        // Calculate reactive power
+                        const sinTheta = Math.sqrt(1 - pf * pf);
+                        const Q = result * sinTheta;
+                        setReactivePower(Q.toFixed(4));
                     } 
                     else if (pf === null) {
+                        if (P <= 0 || S <= 0) throw new Error('Powers must be positive');
+                        if (P > S) throw new Error('Real power cannot exceed apparent power');
                         const result = P / S;
-                        if (result > 1) {
-                            alert('Error: Real Power cannot be greater than Apparent Power');
-                            return;
-                        }
-                        setPowerFactor(Math.round(result * 1000) / 1000);
+                        setPowerFactor(result.toFixed(4));
                         setCalculatedField4('powerFactor');
-                    }
-
-                    const calcP = P !== null ? P : S * pf;
-                    const calcS = S !== null ? S : P / pf;
-
-                    if (V !== null && I === null) {
-                        setCurrent(Math.round((calcS * 1000) / (Math.sqrt(3) * V) * 100) / 100);
-                    } 
-                    else if (I !== null && V === null) {
-                        setVoltage(Math.round((calcS * 1000) / (Math.sqrt(3) * I) * 100) / 100);
+                        
+                        // Calculate reactive power
+                        const sinTheta = Math.sqrt(1 - result * result);
+                        const Q = S * sinTheta;
+                        setReactivePower(Q.toFixed(4));
                     }
                 } catch (error) {
-                    alert('Calculation error - please check your values');
+                    alert(error.message || 'Calculation error - please check your values');
                 }
             };
 
@@ -476,6 +486,7 @@
                 setVoltage('');
                 setCurrent('');
                 setCalculatedField4(null);
+                setReactivePower(null);
             };
 
             const isOutOfRange = (value) => {
@@ -503,7 +514,6 @@
             const getPage3InputClass = (fieldName) => {
                 const baseClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
                 
-                // Special validation for poles field
                 if (fieldName === 'poles' && poles !== '') {
                     const p = parseFloat(poles);
                     if (!Number.isInteger(p) || p % 2 !== 0) {
@@ -517,7 +527,6 @@
                 return `${baseClass} border-gray-300`;
             };
 
-            // NEW - Page 4 input class
             const getPage4InputClass = (fieldName) => {
                 const baseClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
                 if (calculatedField4 === fieldName) {
@@ -534,7 +543,7 @@
                     onTouchEnd={onTouchEnd}
                 >
                     <div className="max-w-md mx-auto relative pb-8">
-                        {/* Page Indicator - UPDATED to 4 dots */}
+                        {/* Page Indicator */}
                         <div className="flex justify-center gap-2 mb-4 pt-2">
                             <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 0 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
                             <div className={`w-2 h-2 rounded-full transition-all ${currentPage === 1 ? 'bg-indigo-600 w-8' : 'bg-gray-300'}`}></div>
@@ -543,7 +552,7 @@
                         </div>
 
                         <div className="relative" style={{ minHeight: 'auto' }}>
-                            {/* Page 1: Temperature Calculator - UNCHANGED */}
+                            {/* Page 1: Temperature Calculator */}
                             <div 
                                 className={`absolute w-full transition-all duration-300 ${
                                     currentPage === 0 ? 'translate-x-0 opacity-100 z-10' : '-translate-x-full opacity-0 pointer-events-none z-0'
@@ -607,385 +616,3 @@
 
                                         <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Initial Temperature T₁ (°C)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={T1}
-                                                onChange={(e) => setT1(e.target.value)}
-                                                placeholder="e.g., 25"
-                                                className={getPage1InputClass('T1')}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Final Temperature T₂ (°C)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={T2}
-                                                onChange={(e) => setT2(e.target.value)}
-                                                placeholder="e.g., 75"
-                                                className={getPage1InputClass('T2')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
-                                        <p className="text-xs text-blue-800">
-                                            💡 <strong>Tip:</strong> Leave ONE field empty and fill the other three.
-                                        </p>
-                                    </div>
-
-                                    <div className="flex gap-3 mb-3">
-                                        <button
-                                            onClick={calculateMissing}
-                                            className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md text-sm"
-                                        >
-                                            Calculate
-                                        </button>
-                                        <button
-                                            onClick={reset}
-                                            className="px-5 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
-                                        >
-                                            Reset
-                                        </button>
-                                    </div>
-
-                                   <div class="formula-card-content">
-                                        <div class="formula-title">IEC60034 Temperature Correction of Resistance Formula</div>
-                                    
-                                        <div class="formula-display">
-                                            <div class="fraction-container">
-                                                <div class="fraction-numerator">R<span class="sub">2</span></div>
-                                                <div class="fraction-denominator">R<span class="sub">1</span></div>
-                                            </div>
-                                            <span> = </span>
-                                            <div class="fraction-container">
-                                                <div class="fraction-numerator">k + T<span class="sub">2</span></div>
-                                                <div class="fraction-denominator">k + T<span class="sub">1</span></div>
-                                            </div>
-                                        </div>
-                                    
-                                        <div class="formula-legend">
-                                            <span class="legend-item"><strong>Where:</strong></span>
-                                            <span class="legend-item">R<span class="sub">2</span> = Resistance at Temp T<span class="sub">2</span></span>
-                                            <span class="legend-item">R<span class="sub">1</span> = Resistance at Temp T<span class="sub">1</span></span>
-                                            <span class="legend-item">k = Reciprocal of temp. coefficient (235 for Copper)</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Page 2: Resistance Average Calculator - UNCHANGED */}
-                            <div 
-                                className={`absolute w-full transition-all duration-300 ${
-                                    currentPage === 1 ? 'translate-x-0 opacity-100 z-10' : currentPage === 0 ? 'translate-x-full opacity-0 pointer-events-none z-0' : '-translate-x-full opacity-0 pointer-events-none z-0'
-                                }`}
-                            >
-                                <div className="bg-white rounded-2xl shadow-xl p-4 max-h-[calc(100vh-60px)] overflow-y-auto">
-                                    <div className="flex items-center justify-center mb-4">
-                                        <div className="w-8 h-8 text-indigo-600 mr-3"><TrendingUp /></div>
-                                        <h1 className="text-lg font-bold text-gray-800">Resistance Analyser</h1>
-                                    </div>
-                                    
-                                    <p className="text-xs text-gray-600 text-center mb-4">
-                                        Calculate average and check ±1% tolerance
-                                    </p>
-
-                                    <div className="space-y-3 mb-4">
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Resistance 1 (Ω)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={res1}
-                                                onChange={(e) => setRes1(e.target.value)}
-                                                placeholder="e.g., 100.5"
-                                                className={getInputClass(res1)}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Resistance 2 (Ω)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={res2}
-                                                onChange={(e) => setRes2(e.target.value)}
-                                                placeholder="e.g., 101.2"
-                                                className={getInputClass(res2)}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Resistance 3 (Ω)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={res3}
-                                                onChange={(e) => setRes3(e.target.value)}
-                                                placeholder="e.g., 99.8"
-                                                className={getInputClass(res3)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3 mb-4">
-                                        <button
-                                            onClick={calculateAverage}
-                                            className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md text-sm"
-                                        >
-                                            Calculate
-                                        </button>
-                                        <button
-                                            onClick={resetPage2}
-                                            className="px-5 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
-                                        >
-                                            Reset
-                                        </button>
-                                    </div>
-
-                                    {average !== null && (
-                                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200 mb-3">
-                                            <h2 className="text-base font-bold text-gray-800 mb-2">Results</h2>
-                                            
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between items-center pb-2 border-b border-green-200">
-                                                    <span className="text-xs text-gray-700 font-medium">Average:</span>
-                                                    <span className="text-lg font-bold text-indigo-600">{average.toFixed(4)} Ω</span>
-                                                </div>
-                                                
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-gray-700 font-medium">Upper Limit (+1%):</span>
-                                                    <span className="text-sm font-semibold text-orange-600">{upperLimit.toFixed(4)} Ω</span>
-                                                </div>
-                                                
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-gray-700 font-medium">Lower Limit (-1%):</span>
-                                                    <span className="text-sm font-semibold text-orange-600">{lowerLimit.toFixed(4)} Ω</span>
-                                                </div>
-                                            </div>
-
-                                            {(isOutOfRange(res1) || isOutOfRange(res2) || isOutOfRange(res3)) && (
-                                                <div className="mt-3 p-2 bg-red-100 border border-red-300 rounded-lg">
-                                                    <p className="text-xs text-red-800 font-semibold">
-                                                        ⚠️ Warning: One or more values are outside ±1% tolerance!
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <p className="text-xs text-gray-600">
-                                            <strong>Note:</strong> Values outside the ±1% range will be highlighted in red.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Page 3: Machine Speed Calculator - UNCHANGED */}
-                            <div 
-                                className={`absolute w-full transition-all duration-300 ${
-                                    currentPage === 2 ? 'translate-x-0 opacity-100 z-10' : 'translate-x-full opacity-0 pointer-events-none z-0'
-                                }`}
-                            >
-                                <div className="bg-white rounded-2xl shadow-xl p-4 max-h-[calc(100vh-60px)] overflow-y-auto">
-                                    <div className="flex items-center justify-center mb-4">
-                                        <div className="w-8 h-8 text-indigo-600 mr-3"><Settings /></div>
-                                        <h1 className="text-lg font-bold text-gray-800">Machine Speed Calculator</h1>
-                                    </div>
-                                    
-                                    <p className="text-xs text-gray-600 text-center mb-4">
-                                        Enter any 2 values to calculate the 3rd
-                                    </p>
-
-                                    <div className="space-y-3 mb-4">
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Speed n (RPM)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={speed}
-                                                onChange={(e) => setSpeed(e.target.value)}
-                                                placeholder="e.g., 1500"
-                                                className={getPage3InputClass('speed')}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Frequency f (Hz)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={frequency}
-                                                onChange={(e) => setFrequency(e.target.value)}
-                                                placeholder="e.g., 50"
-                                                className={getPage3InputClass('frequency')}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Number of Poles p
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="any"
-                                                value={poles}
-                                                onChange={(e) => setPoles(e.target.value)}
-                                                placeholder="e.g., 4"
-                                                className={getPage3InputClass('poles')}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
-                                        <p className="text-xs text-blue-800">
-                                            💡 <strong>Tip:</strong> Leave ONE field empty and fill the other two.
-                                        </p>
-                                    </div>
-
-                                    <div className="flex gap-3 mb-3">
-                                        <button
-                                            onClick={calculateSpeed}
-                                            className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md text-sm"
-                                        >
-                                            Calculate
-                                        </button>
-                                        <button
-                                            onClick={resetPage3}
-                                            className="px-5 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-sm"
-                                        >
-                                            Reset
-                                        </button>
-                                    </div>
-
-                                    {poles !== '' && (() => {
-                                        const p = parseFloat(poles);
-                                        return !Number.isInteger(p) || p % 2 !== 0;
-                                    })() && (
-                                        <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
-                                            <p className="text-xs text-red-800 font-semibold">
-                                                ⚠️ Poles must be a factor of two and an integer number
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {frequencyWarning && (
-                                        <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
-                                            <p className="text-xs text-red-800 font-semibold">
-                                                ⚠️ {frequencyWarning}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {speedWarning && (
-                                        <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
-                                            <p className="text-xs text-red-800 font-semibold">
-                                                ⚠️ {speedWarning}
-                                            </p>
-                                        </div>
-                                    )}
-
-                    <div class="formula-card-content">
-                        <div class="formula-title">Synchronous Speed Formula</div>
-                        
-                        <div class="formula-display">
-                            <span>n = </span>
-                            <div class="fraction-container">
-                                <div class="fraction-numerator">120 &times; f</div>
-                                <div class="fraction-denominator">p</div>
-                            </div>
-                        </div>
-                    
-                        <div class="formula-legend">
-                            <span class="legend-item"><strong>Where:</strong></span>
-                            <span class="legend-item">n = Synchronous speed (RPM)</span>
-                            <span class="legend-item">f = Frequency (Hz)</span>
-                            <span class="legend-item">p = Number of poles</span>
-                        </div>
-                    </div>
-                                </div>
-                            </div>
-
-                            {/* Page 4: Power Triangle */}
-                            {currentPage === 4 && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                        <h3 className="text-lg font-semibold text-blue-800 mb-2">Power Triangle Calculator</h3>
-                                        <p className="text-sm text-blue-600">Enter any two values to calculate the others.</p>
-                                    </div>
-                            
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {/* Active Power (P) */}
-                                                <div className="space-y-1">
-                                                    <label className="block text-xs font-medium text-gray-700">Active Power (P) [kW]</label>
-                                                    <input 
-                                                        type="number" 
-                                                        className="w-full p-2 border rounded shadow-sm focus:ring-2 focus:ring-blue-500"
-                                                        value={powerP || ''} 
-                                                        onChange={(e) => setPowerP(e.target.value)}
-                                                    />
-                                                </div>
-                                                {/* Apparent Power (S) */}
-                                                <div className="space-y-1">
-                                                    <label className="block text-xs font-medium text-gray-700">Apparent Power (S) [kVA]</label>
-                                                    <input 
-                                                        type="number" 
-                                                        className="w-full p-2 border rounded shadow-sm focus:ring-2 focus:ring-blue-500"
-                                                        value={powerS || ''} 
-                                                        onChange={(e) => setPowerS(e.target.value)}
-                                                    />
-                                                </div>
-                                                {/* Reactive Power (Q) */}
-                                                <div className="space-y-1">
-                                                    <label className="block text-xs font-medium text-gray-700">Reactive Power (Q) [kVAR]</label>
-                                                    <input 
-                                                        type="number" 
-                                                        className="w-full p-2 border rounded shadow-sm focus:ring-2 focus:ring-blue-500"
-                                                        value={powerQ || ''} 
-                                                        onChange={(e) => setPowerQ(e.target.value)}
-                                                    />
-                                                </div>
-                                                {/* Power Factor (cos φ) */}
-                                                <div className="space-y-1">
-                                                    <label className="block text-xs font-medium text-gray-700">Power Factor (cos φ)</label>
-                                                    <input 
-                                                        type="number" 
-                                                        step="0.01"
-                                                        className="w-full p-2 border rounded shadow-sm focus:ring-2 focus:ring-blue-500"
-                                                        value={powerPF || ''} 
-                                                        onChange={(e) => setPowerPF(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                            
-                                        {/* Results Display for Page 4 */}
-                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col justify-center">
-                                            <div className="text-center space-y-2">
-                                                <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Calculation Results</div>
-                                                {/* Add your logic for displaying results here */}
-                                                <div className="text-2xl font-bold text-blue-600">Result Display</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
