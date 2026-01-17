@@ -143,7 +143,21 @@
             </svg>
         );
 
+               const ChevronLeft = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        );
+
+        const ChevronRight = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        );
+
         function TempCalculator() {
+            const TOTAL_PAGES = 4; // Easy to update when adding more pages
+            
             const [currentPage, setCurrentPage] = useState(0);
             const [touchStart, setTouchStart] = useState(null);
             const [touchEnd, setTouchEnd] = useState(null);
@@ -204,11 +218,23 @@
                 const isLeftSwipe = distance > minSwipeDistance;
                 const isRightSwipe = distance < -minSwipeDistance;
                 
-                if (isLeftSwipe && currentPage < 3) {
+                if (isLeftSwipe && currentPage < TOTAL_PAGES - 1) {
                     setCurrentPage(currentPage + 1);
                 }
                 if (isRightSwipe && currentPage > 0) {
                     setCurrentPage(currentPage - 1);
+                }
+            };
+
+            const goToPreviousPage = () => {
+                if (currentPage > 0) {
+                    setCurrentPage(currentPage - 1);
+                }
+            };
+
+            const goToNextPage = () => {
+                if (currentPage < TOTAL_PAGES - 1) {
+                    setCurrentPage(currentPage + 1);
                 }
             };
 
