@@ -423,18 +423,18 @@
                     if (V !== null && I !== null) {
                         // Calculate S from V and I: S = √3 × V × I / 1000
                         const calcS = Math.sqrt(3) * V * I / 1000;
-                        setApparentPower(calcS.toFixed(4));
+                        setApparentPower(calcS.toFixed(1));
                         const calculated = ['apparentPower'];
 
                         // If we have pf, calculate P
                         if (pf !== null) {
                             const calcP = calcS * pf;
-                            setRealPower(calcP.toFixed(4));
+                            setRealPower(calcP.toFixed(1));
                             calculated.push('realPower');
                             
                             const sinTheta = Math.sqrt(1 - pf * pf);
                             const Q = calcS * sinTheta;
-                            setReactivePower(Q.toFixed(4));
+                            setReactivePower(Q.toFixed(1));
                         }
                         // If we have P, calculate pf
                         else if (P !== null) {
@@ -443,23 +443,23 @@
                                 alert('Calculated power factor exceeds 1.0. Please check your values.');
                                 return;
                             }
-                            setPowerFactor(calcPF.toFixed(4));
+                            setPowerFactor(calcPF.toFixed(2));
                             calculated.push('powerFactor');
                             
                             const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                             const Q = calcS * sinTheta;
-                            setReactivePower(Q.toFixed(4));
+                            setReactivePower(Q.toFixed(1));
                         }
                         // If we have S given, calculate pf
                         else if (S !== null) {
                             // User provided both S and V,I - verify consistency or recalculate pf
                             const calcPF = S !== null && P !== null ? P / S : null;
                             if (calcPF !== null) {
-                                setPowerFactor(calcPF.toFixed(4));
+                                setPowerFactor(calcPF.toFixed(2));
                                 calculated.push('powerFactor');
                                 const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                                 const Q = S * sinTheta;
-                                setReactivePower(Q.toFixed(4));
+                                setReactivePower(Q.toFixed(1));
                             }
                         }
                         setCalculatedField4(calculated);
@@ -471,18 +471,18 @@
                         // Need S to calculate I: I = S × 1000 / (√3 × V)
                         if (S !== null) {
                             const calcI = (S * 1000) / (Math.sqrt(3) * V);
-                            setCurrent(calcI.toFixed(4));
+                            setCurrent(calcI.toFixed(1));
                             const calculated = ['current'];
 
                             // If we have pf, calculate P
                             if (pf !== null) {
                                 const calcP = S * pf;
-                                setRealPower(calcP.toFixed(4));
+                                setRealPower(calcP.toFixed(1));
                                 calculated.push('realPower');
                                 
                                 const sinTheta = Math.sqrt(1 - pf * pf);
                                 const Q = S * sinTheta;
-                                setReactivePower(Q.toFixed(4));
+                                setReactivePower(Q.toFixed(1));
                             }
                             // If we have P, calculate pf
                             else if (P !== null) {
@@ -491,12 +491,12 @@
                                     alert('Calculated power factor exceeds 1.0. Please check your values.');
                                     return;
                                 }
-                                setPowerFactor(calcPF.toFixed(4));
+                                setPowerFactor(calcPF.toFixed(2));
                                 calculated.push('powerFactor');
                                 
                                 const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                                 const Q = S * sinTheta;
-                                setReactivePower(Q.toFixed(4));
+                                setReactivePower(Q.toFixed(1));
                             }
                             setCalculatedField4(calculated);
                             return;
@@ -504,14 +504,14 @@
                         // Calculate S first from P and pf, then I
                         else if (P !== null && pf !== null) {
                             const calcS = P / pf;
-                            setApparentPower(calcS.toFixed(4));
+                            setApparentPower(calcS.toFixed(1));
                             
                             const calcI = (calcS * 1000) / (Math.sqrt(3) * V);
-                            setCurrent(calcI.toFixed(4));
+                            setCurrent(calcI.toFixed(1));
                             
                             const sinTheta = Math.sqrt(1 - pf * pf);
                             const Q = calcS * sinTheta;
-                            setReactivePower(Q.toFixed(4));
+                            setReactivePower(Q.toFixed(1));
                             
                             setCalculatedField4(['apparentPower', 'current']);
                             return;
@@ -523,18 +523,18 @@
                         // Need S to calculate V: V = S × 1000 / (√3 × I)
                         if (S !== null) {
                             const calcV = (S * 1000) / (Math.sqrt(3) * I);
-                            setVoltage(calcV.toFixed(4));
+                            setVoltage(calcV.toFixed(1));
                             const calculated = ['voltage'];
 
                             // If we have pf, calculate P
                             if (pf !== null) {
                                 const calcP = S * pf;
-                                setRealPower(calcP.toFixed(4));
+                                setRealPower(calcP.toFixed(1));
                                 calculated.push('realPower');
                                 
                                 const sinTheta = Math.sqrt(1 - pf * pf);
                                 const Q = S * sinTheta;
-                                setReactivePower(Q.toFixed(4));
+                                setReactivePower(Q.toFixed(1));
                             }
                             // If we have P, calculate pf
                             else if (P !== null) {
@@ -543,12 +543,12 @@
                                     alert('Calculated power factor exceeds 1.0. Please check your values.');
                                     return;
                                 }
-                                setPowerFactor(calcPF.toFixed(4));
+                                setPowerFactor(calcPF.toFixed(2));
                                 calculated.push('powerFactor');
                                 
                                 const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                                 const Q = S * sinTheta;
-                                setReactivePower(Q.toFixed(4));
+                                setReactivePower(Q.toFixed(1));
                             }
                             setCalculatedField4(calculated);
                             return;
@@ -556,14 +556,14 @@
                         // Calculate S first from P and pf, then V
                         else if (P !== null && pf !== null) {
                             const calcS = P / pf;
-                            setApparentPower(calcS.toFixed(4));
+                            setApparentPower(calcS.toFixed(1));
                             
                             const calcV = (calcS * 1000) / (Math.sqrt(3) * I);
-                            setVoltage(calcV.toFixed(4));
+                            setVoltage(calcV.toFixed(1));
                             
                             const sinTheta = Math.sqrt(1 - pf * pf);
                             const Q = calcS * sinTheta;
-                            setReactivePower(Q.toFixed(4));
+                            setReactivePower(Q.toFixed(1));
                             
                             setCalculatedField4(['apparentPower', 'voltage']);
                             return;
@@ -582,22 +582,22 @@
                     if (P === null) {
                         // Calculate P from S and pf: P = S × cos(θ)
                         const calcP = S * pf;
-                        setRealPower(calcP.toFixed(4));
+                        setRealPower(calcP.toFixed(1));
                         
                         const sinTheta = Math.sqrt(1 - pf * pf);
                         const Q = S * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                         
                         setCalculatedField4(['realPower']);
                     } 
                     else if (S === null) {
                         // Calculate S from P and pf: S = P / cos(θ)
                         const calcS = P / pf;
-                        setApparentPower(calcS.toFixed(4));
+                        setApparentPower(calcS.toFixed(1));
                         
                         const sinTheta = Math.sqrt(1 - pf * pf);
                         const Q = calcS * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                         
                         setCalculatedField4(['apparentPower']);
                     } 
@@ -608,11 +608,11 @@
                             return;
                         }
                         const calcPF = P / S;
-                        setPowerFactor(calcPF.toFixed(4));
+                        setPowerFactor(calcPF.toFixed(2));
                         
                         const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                         const Q = S * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                         
                         setCalculatedField4(['powerFactor']);
                     }
