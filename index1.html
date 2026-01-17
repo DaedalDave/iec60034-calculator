@@ -385,7 +385,7 @@
                 setSpeedWarning(null);
                 setFrequencyWarning(null);
             };
-
+            //page 4 Power triangle constants and calcs below
             const calculatePower = () => {
                 const P = realPower === '' ? null : parseFloat(realPower);
                 const S = apparentPower === '' ? null : parseFloat(apparentPower);
@@ -397,30 +397,30 @@
                 if (V !== null && I !== null && !isNaN(V) && !isNaN(I) && V > 0 && I > 0) {
                     // 3-phase calculation
                     const calcS = Math.sqrt(3) * V * I / 1000; // Convert to kVA
-                    setApparentPower(calcS.toFixed(4));
+                    setApparentPower(calcS.toFixed(1));
                     setCalculatedField4('apparentPower');
                     
                     if (pf !== null && !isNaN(pf) && pf > 0 && pf <= 1) {
                         const calcP = Math.sqrt(3) * V * I * pf / 1000; // Convert to kW
-                        setRealPower(calcP.toFixed(4));
+                        setRealPower(calcP.toFixed(1));
                         
                         // Calculate reactive power
                         const sinTheta = Math.sqrt(1 - pf * pf);
                         const Q = calcS * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                     } else if (P !== null && !isNaN(P) && P > 0) {
                         const calcPF = P / calcS;
                         if (calcPF > 1) {
                             alert('Calculated power factor exceeds 1.0. Please check your values.');
                             return;
                         }
-                        setPowerFactor(calcPF.toFixed(4));
+                        setPowerFactor(calcPF.toFixed(2));
                         setCalculatedField4('powerFactor');
                         
                         // Calculate reactive power
                         const sinTheta = Math.sqrt(1 - calcPF * calcPF);
                         const Q = calcS * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                     }
                     return;
                 }
@@ -443,36 +443,36 @@
                     if (P === null) {
                         if (S <= 0 || pf <= 0 || pf > 1) throw new Error('Invalid values');
                         const result = S * pf;
-                        setRealPower(result.toFixed(4));
+                        setRealPower(result.toFixed(1));
                         setCalculatedField4('realPower');
                         
                         // Calculate reactive power
                         const sinTheta = Math.sqrt(1 - pf * pf);
                         const Q = S * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                     } 
                     else if (S === null) {
                         if (P <= 0 || pf <= 0 || pf > 1) throw new Error('Invalid values');
                         const result = P / pf;
-                        setApparentPower(result.toFixed(4));
+                        setApparentPower(result.toFixed(1));
                         setCalculatedField4('apparentPower');
                         
                         // Calculate reactive power
                         const sinTheta = Math.sqrt(1 - pf * pf);
                         const Q = result * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                     } 
                     else if (pf === null) {
                         if (P <= 0 || S <= 0) throw new Error('Powers must be positive');
                         if (P > S) throw new Error('Real power cannot exceed apparent power');
                         const result = P / S;
-                        setPowerFactor(result.toFixed(4));
+                        setPowerFactor(result.toFixed(2));
                         setCalculatedField4('powerFactor');
                         
                         // Calculate reactive power
                         const sinTheta = Math.sqrt(1 - result * result);
                         const Q = S * sinTheta;
-                        setReactivePower(Q.toFixed(4));
+                        setReactivePower(Q.toFixed(1));
                     }
                 } catch (error) {
                     alert(error.message || 'Calculation error - please check your values');
