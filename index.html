@@ -1159,7 +1159,7 @@
                                                 step="any"
                                                 value={realPower}
                                                 onChange={(e) => setRealPower(e.target.value)}
-                                                placeholder="e.g., 7500"
+                                                placeholder="e.g., 8500"
                                                 className={getPage4InputClass('realPower')}
                                             />
                                         </div>
@@ -1218,7 +1218,7 @@
                                                     step="any"
                                                     value={current}
                                                     onChange={(e) => setCurrent(e.target.value)}
-                                                    placeholder="e.g., 500"
+                                                    placeholder="e.g., 525"
                                                     className={getPage4OptionalInputClass('current')}
                                                 />
                                             </div>
@@ -1293,6 +1293,7 @@
                                             <span className="legend-item">cos(θ) = Power Factor</span>
                                             <span className="legend-item">V = Line Voltage (V)</span>
                                             <span className="legend-item">I = Line Current (A)</span>
+                                            <span className="legend-item">* / 1000 used for answers in kW & kVA</span>
                                         </div>
                                     </div>
                                 </div>
