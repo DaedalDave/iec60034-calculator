@@ -275,14 +275,14 @@
                         if (r1 <= 0 || r2 <= 0) throw new Error('Resistances must be positive');
                         const result = (r1 * (k + t2) / r2) - k;
                         if (!isFinite(result)) throw new Error('Invalid calculation result');
-                        setT1(result.toFixed(2));
+                        setT1(result.toFixed(1));
                         setCalculatedField('T1');
                     } 
                     else if (t2 === null) {
                         if (r1 <= 0 || r2 <= 0) throw new Error('Resistances must be positive');
                         const result = (r2 / r1) * (k + t1) - k;
                         if (!isFinite(result)) throw new Error('Invalid calculation result');
-                        setT2(result.toFixed(2));
+                        setT2(result.toFixed(1));
                         setCalculatedField('T2');
                     }
                 } catch (error) {
