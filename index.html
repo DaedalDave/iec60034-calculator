@@ -261,14 +261,14 @@
                         if (r2 <= 0) throw new Error('R2 must be positive');
                         const result = r2 * (k + t1) / (k + t2);
                         if (result <= 0 || !isFinite(result)) throw new Error('Invalid calculation result');
-                        setR1(result.toFixed(2));
+                        setR1(result.toFixed(6));
                         setCalculatedField('R1');
                     } 
                     else if (r2 === null) {
                         if (r1 <= 0) throw new Error('R1 must be positive');
                         const result = r1 * (k + t2) / (k + t1);
                         if (result <= 0 || !isFinite(result)) throw new Error('Invalid calculation result');
-                        setR2(result.toFixed(2));
+                        setR2(result.toFixed(6));
                         setCalculatedField('R2');
                     } 
                     else if (t1 === null) {
