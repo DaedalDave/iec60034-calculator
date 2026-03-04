@@ -356,6 +356,7 @@
             const [gBoreDia, setGBoreDia] = useState('');
             const [gSlotDepth, setGSlotDepth] = useState('');
             const [gFrequency, setGFrequency] = useState('50');
+            const [gFluxDensity, setGFluxDensity] = useState('1.2');
             const [gResult, setGResult] = useState(null);
 
             const materials = {
@@ -673,21 +674,22 @@
                 // Series turns per phase
                 const Tp = (S * W * T) / (Pn * C * 2);
 
-                // Single turn voltage at rated flux  [Vp-p in kV]
-                const V_kV = V / 1000;
-                const Vt_rated = (12.56 * V_kV) / Tp;
-
-                // Voltage at test level
-                const Vt_test = Vt_rated * (X / 100);
+                // Single turn voltage at X% test flux level
+                const K = parseFloat(wKFactor);
+                if (isNaN(K) || K <= 0 || K > 1) {
+                    alert('Core factor K must be between 0 and 1');
+                    return;
+                }
+                const Vt = ((X / 100) * V) / (2 * Math.sqrt(3) * K * Tp);
 
                 // Optional V/m verification
                 let vtPerMeter = null;
                 const l = parseFloat(wCoreLength);
                 if (!isNaN(l) && l > 0) {
-                    vtPerMeter = Vt_rated / l;
+                    vtPerMeter = Vt / l;
                 }
 
-                setWResult({ Tp, Vt_rated, Vt_test, vtPerMeter });
+                setWResult({ Tp, Vt, vtPerMeter });
             };
 
             const resetWindingMethod = () => {
@@ -698,15 +700,20 @@
             };
 
             // ── Page 5 — Method 2: Geometric Data ───────────────────────
-            const calculateGeoMethod = () => {
+                       const calculateGeoMethod = () => {
                 const l      = parseFloat(gCoreLength);
                 const OD     = parseFloat(gBackOD);
                 const bore   = parseFloat(gBoreDia);
                 const slotD  = parseFloat(gSlotDepth);
                 const hz     = parseFloat(gFrequency);
+                const B      = parseFloat(gFluxDensity);
 
                 if ([l, OD, bore, slotD, hz].some(v => isNaN(v) || v <= 0)) {
                     alert('Please enter valid positive values for all fields');
+                    return;
+                }
+                if (isNaN(B) || B <= 0) {
+                    alert('Peak flux density B must be a positive value');
                     return;
                 }
                 if (OD <= bore) {
@@ -721,16 +728,16 @@
                     return;
                 }
 
-                // Single turn voltage
-                const Vt = 0.226 * hz * l * d;
+                // Single turn voltage: Vt = 1.414 × π × f × l × d × B
+                const Vt = 1.414 * Math.PI * hz * l * d * B;
                 const vtPerMeter = Vt / l;
 
-                setGResult({ d, Vt, vtPerMeter });
+                setGResult({ d, Vt, vtPerMeter, B });
             };
 
             const resetGeoMethod = () => {
                 setGCoreLength(''); setGBackOD(''); setGBoreDia('');
-                setGSlotDepth(''); setGFrequency('50');
+                setGSlotDepth(''); setGFrequency('50'); setGFluxDensity('1.2');
                 setGResult(null);
             };
 
@@ -1165,7 +1172,7 @@
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                    Core factor <span className="text-gray-400 font-normal">(K)</span>
+                                                    Winding factor <span className="text-gray-400 font-normal">(K)</span>
                                                 </label>
                                                 <input type="number" step="any" min="0" max="1" value={wKFactor}
                                                     onChange={e => setWKFactor(e.target.value)}
@@ -1176,7 +1183,7 @@
                                                 <label className="block text-xs font-medium text-gray-700 mb-1">
                                                     Test level <span className="text-gray-400 font-normal">(X %)</span>
                                                 </label>
-                                                <input type="number" step="any" min="0" max="100" value={wTestLevel}
+                                                <input type="number" step="any" min="0.1" max="100" value={wTestLevel}
                                                     onChange={e => setWTestLevel(e.target.value)}
                                                     placeholder="4"
                                                     className={stdInput} />
@@ -1216,14 +1223,11 @@
                                                     <span className="text-xs text-gray-600">Series turns / phase (Tₚ)</span>
                                                     <span className="text-sm font-bold text-violet-700">{wResult.Tp.toFixed(1)}</span>
                                                 </div>
-                                                <div className="flex justify-between items-center pb-1.5 border-b border-violet-200">
-                                                    <span className="text-xs text-gray-600">V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span> at rated flux</span>
-                                                    <span className="text-lg font-bold text-indigo-700">{wResult.Vt_rated.toFixed(3)} V</span>
-                                                </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-gray-600">V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span> at {wTestLevel}% test level</span>
-                                                    <span className="text-sm font-bold text-emerald-600">{wResult.Vt_test.toFixed(3)} V</span>
+                                                    <span className="text-xs text-gray-600">V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span> at {wTestLevel}% flux</span>
+                                                    <span className="text-lg font-bold text-indigo-700">{wResult.Vt.toFixed(3)} V</span>
                                                 </div>
+                                            </div>
                                             </div>
                                             {wResult.vtPerMeter !== null && (
                                                 <VmRangeGuide vtPerMeter={wResult.vtPerMeter} />
@@ -1249,8 +1253,8 @@
                                         <div className="formula-display">
                                             <span>V<span className="sub">t</span> = </span>
                                             <div className="fraction-container">
-                                                <div className="fraction-numerator">12.56 × V<span className="sub">L-L(kV)</span></div>
-                                                <div className="fraction-denominator">T<span className="sub">p</span></div>
+                                                <div className="fraction-numerator">(X/100) × V<span className="sub">L-L</span></div>
+                                                <div className="fraction-denominator">2√3 × K × T<span className="sub">p</span></div>
                                             </div>
                                         </div>
                                         <div className="formula-legend">
@@ -1260,9 +1264,9 @@
                                             <span className="legend-item">T = Series turns per coil</span>
                                             <span className="legend-item">P<span className="sub">n</span> = Number of phases</span>
                                             <span className="legend-item">C = Parallel circuits per phase</span>
-                                            <span className="legend-item">V<span className="sub">L-L</span> = Line-to-line voltage (kV)</span>
-                                            <span className="legend-item">K = Core stacking factor (for reference)</span>
-                                            <span className="legend-item">X = Test flux level (%)</span>
+                                            <span className="legend-item">V<span className="sub">L-L</span> = Line-to-line voltage (V)</span>
+                                            <span className="legend-item">K = Combined k<span className="sub">d</span> and k<span className="sub">p</span>, the distribution and pitch factors — use 0.92 if unknown</span>
+                                            <span className="legend-item">X = Test flux level (%) — range 0.1 to 100</span>
                                         </div>
                                     </div>
 
@@ -1336,6 +1340,20 @@
                                                 placeholder="e.g. 0.133"
                                                 className={stdInput} />
                                         </div>
+
+                                        {/* Peak flux density */}
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Peak flux density <span className="text-gray-400 font-normal">(B) Tesla</span>
+                                            </label>
+                                            <input type="number" step="any" min="0" value={gFluxDensity}
+                                                onChange={e => setGFluxDensity(e.target.value)}
+                                                placeholder="e.g. 1.2"
+                                                className={stdInput} />
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Typical: turbo generator ~1.4 T &nbsp;·&nbsp; hydro generator ~1.0 T &nbsp;·&nbsp; motor ~1.2 T
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {/* Method 2 derived display (shown if enough data) */}
@@ -1375,8 +1393,12 @@
                                                     <span className="text-xs text-gray-600">Core thickness (d)</span>
                                                     <span className="text-sm font-bold text-emerald-700">{gResult.d.toFixed(4)} m</span>
                                                 </div>
+                                                <div className="flex justify-between items-center pb-1.5 border-b border-emerald-200">
+                                                    <span className="text-xs text-gray-600">Peak flux density (B)</span>
+                                                    <span className="text-sm font-bold text-emerald-700">{gResult.B.toFixed(2)} T</span>
+                                                </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-gray-600">Single turn voltage (V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span>)</span>
+                                                    <span className="text-xs text-gray-600">Single turn voltage (V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span>) at {gResult.B.toFixed(2)} T</span>
                                                     <span className="text-lg font-bold text-indigo-700">{gResult.Vt.toFixed(3)} V</span>
                                                 </div>
                                             </div>
@@ -1396,16 +1418,19 @@
                                             <span> − slot depth</span>
                                         </div>
                                         <div className="formula-display">
-                                            <span>V<span className="sub">t</span> = 0.226 × Hz × l × d</span>
+                                            <span>V<span className="sub">t</span> = 1.414 × π × f × l × d × B</span>
                                         </div>
                                         <div className="formula-legend">
                                             <span className="legend-item"><strong>Where:</strong></span>
-                                            <span className="legend-item">d = Core thickness, single side (m)</span>
+                                            <span className="legend-item">d = Depth from slot base to back of core (m)</span>
                                             <span className="legend-item">OD = Back-of-core (outer) diameter (m)</span>
                                             <span className="legend-item">bore = Stator bore diameter (m)</span>
-                                            <span className="legend-item">l = Active core length (m)</span>
-                                            <span className="legend-item">Hz = Supply frequency</span>
+                                            <span className="legend-item">l = Magnetic equivalent core length, excl. radial vents (m)</span>
+                                            <span className="legend-item">f = Supply frequency (Hz)</span>
+                                            <span className="legend-item">B = Peak flux density in core back / yoke (Tesla)</span>
+                                            <span className="legend-item">1.414 = √2 (peak factor)</span>
                                         </div>
+                                    </div>
                                     </div>
 
                                     {/* V/m range guidance tip — always visible */}
