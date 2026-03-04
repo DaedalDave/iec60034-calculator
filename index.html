@@ -661,13 +661,18 @@
                 const Pn = parseFloat(wPhases);
                 const V  = parseFloat(wVoltage);   // line-to-line volts
                 const X  = parseFloat(wTestLevel); // % test level
+                const K  = parseFloat(wKFactor);
 
                 if ([S, W, C, T, Pn, V, X].some(v => isNaN(v) || v <= 0)) {
                     alert('Please enter valid positive values for all required fields');
                     return;
                 }
-                if (C <= 0 || Pn <= 0) {
-                    alert('Phases and parallel circuits must be positive');
+                if (isNaN(K) || K <= 0 || K > 1) {
+                    alert('Winding factor K must be between 0 and 1');
+                    return;
+                }
+                if (X < 0.1 || X > 100) {
+                    alert('Test level X must be between 0.1% and 100%');
                     return;
                 }
 
@@ -675,11 +680,7 @@
                 const Tp = (S * W * T) / (Pn * C * 2);
 
                 // Single turn voltage at X% test flux level
-                const K = parseFloat(wKFactor);
-                if (isNaN(K) || K <= 0 || K > 1) {
-                    alert('Core factor K must be between 0 and 1');
-                    return;
-                }
+                // Vt = ((X/100) × V_LL) / (2 × √3 × K × Tp)
                 const Vt = ((X / 100) * V) / (2 * Math.sqrt(3) * K * Tp);
 
                 // Optional V/m verification
@@ -700,7 +701,7 @@
             };
 
             // ── Page 5 — Method 2: Geometric Data ───────────────────────
-                       const calculateGeoMethod = () => {
+            const calculateGeoMethod = () => {
                 const l      = parseFloat(gCoreLength);
                 const OD     = parseFloat(gBackOD);
                 const bore   = parseFloat(gBoreDia);
@@ -1220,7 +1221,7 @@
                                             <h3 className="text-sm font-bold text-gray-800 mb-2">Method 1 Results</h3>
                                             <div className="space-y-1.5">
                                                 <div className="flex justify-between items-center pb-1.5 border-b border-violet-200">
-                                                    <span className="text-xs text-gray-600">Series turns / phase (Tₚ)</span>
+                                                    <span className="text-xs text-gray-600">Series turns / phase (T<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>p</span>)</span>
                                                     <span className="text-sm font-bold text-violet-700">{wResult.Tp.toFixed(1)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
@@ -1228,11 +1229,9 @@
                                                     <span className="text-lg font-bold text-indigo-700">{wResult.Vt.toFixed(3)} V</span>
                                                 </div>
                                             </div>
-                                            </div>
-                                            {wResult.vtPerMeter !== null && (
+                                            {wResult.vtPerMeter !== null ? (
                                                 <VmRangeGuide vtPerMeter={wResult.vtPerMeter} />
-                                            )}
-                                            {wResult.vtPerMeter === null && (
+                                            ) : (
                                                 <div className="mt-2 text-xs text-gray-500 italic">
                                                     Enter core length above to verify V<span style={{fontSize:'0.7em',verticalAlign:'sub'}}>t</span>/m range
                                                 </div>
@@ -1422,7 +1421,7 @@
                                         </div>
                                         <div className="formula-legend">
                                             <span className="legend-item"><strong>Where:</strong></span>
-                                            <span className="legend-item">d = Depth from slot base to back of core (m)</span>
+                                            <span className="legend-item">d = Depth from base of slots to back of core (m)</span>
                                             <span className="legend-item">OD = Back-of-core (outer) diameter (m)</span>
                                             <span className="legend-item">bore = Stator bore diameter (m)</span>
                                             <span className="legend-item">l = Magnetic equivalent core length, excl. radial vents (m)</span>
@@ -1430,7 +1429,6 @@
                                             <span className="legend-item">B = Peak flux density in core back / yoke (Tesla)</span>
                                             <span className="legend-item">1.414 = √2 (peak factor)</span>
                                         </div>
-                                    </div>
                                     </div>
 
                                     {/* V/m range guidance tip — always visible */}
