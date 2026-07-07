@@ -357,6 +357,7 @@
             const [gSlotDepth, setGSlotDepth] = useState('');
             const [gFrequency, setGFrequency] = useState('50');
             const [gFluxDensity, setGFluxDensity] = useState('1.2');
+            const [gTestLevel, setGTestLevel] = useState('4');
             const [gResult, setGResult] = useState(null);
 
             const materials = {
@@ -679,6 +680,12 @@
                 // Series turns per phase
                 const Tp = (S * W * T) / (Pn * C * 2);
 
+                // Turns in series per phase must be a whole number
+                if (Math.abs(Tp - Math.round(Tp)) > 1e-6) {
+                    alert('Series turns per phase (Tp) must be a whole number. Please check your slot, windings/slot, turns/coil, phase and parallel circuit values.');
+                    return;
+                }
+
                 // Single turn voltage at X% test flux level
                 // Vt = ((X/100) × V_LL) / (2 × √3 × K × Tp)
                 const Vt = ((X / 100) * V) / (2 * Math.sqrt(3) * K * Tp);
@@ -708,6 +715,7 @@
                 const slotD  = parseFloat(gSlotDepth);
                 const hz     = parseFloat(gFrequency);
                 const B      = parseFloat(gFluxDensity);
+                const X      = parseFloat(gTestLevel); // % test level, for V/m check only
 
                 if ([l, OD, bore, slotD, hz].some(v => isNaN(v) || v <= 0)) {
                     alert('Please enter valid positive values for all fields');
@@ -715,6 +723,10 @@
                 }
                 if (isNaN(B) || B <= 0) {
                     alert('Peak flux density B must be a positive value');
+                    return;
+                }
+                if (isNaN(X) || X <= 0 || X > 100) {
+                    alert('Test level X must be between 0.1% and 100%');
                     return;
                 }
                 if (OD <= bore) {
@@ -733,12 +745,16 @@
                 const Vt = 1.414 * Math.PI * hz * l * d * B;
                 const vtPerMeter = Vt / l;
 
-                setGResult({ d, Vt, vtPerMeter, B });
+                // V/m sanity check scaled to the test flux level (e.g. 0.04× for 4%)
+                const vtPerMeterAtTestLevel = vtPerMeter * (X / 100);
+
+                setGResult({ d, Vt, vtPerMeter, vtPerMeterAtTestLevel, testLevel: X, B });
             };
 
             const resetGeoMethod = () => {
                 setGCoreLength(''); setGBackOD(''); setGBoreDia('');
                 setGSlotDepth(''); setGFrequency('50'); setGFluxDensity('1.2');
+                setGTestLevel('4');
                 setGResult(null);
             };
 
@@ -1094,6 +1110,10 @@
                                         Single turn voltage — two independent methods
                                     </p>
 
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
+                                        <p className="text-xs text-blue-800">💡 <strong>Note:</strong> The calculation assumes a 3 phase star winding.</p>
+                                    </div>
+
                                     {/* ─────────────────────────────────────
                                         METHOD 1 — Winding Details
                                     ───────────────────────────────────── */}
@@ -1340,19 +1360,33 @@
                                                 className={stdInput} />
                                         </div>
 
-                                        {/* Peak flux density */}
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Peak flux density <span className="text-gray-400 font-normal">(B) Tesla</span>
-                                            </label>
-                                            <input type="number" step="any" min="0" value={gFluxDensity}
-                                                onChange={e => setGFluxDensity(e.target.value)}
-                                                placeholder="e.g. 1.2"
-                                                className={stdInput} />
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                Typical: turbo generator ~1.4 T &nbsp;·&nbsp; hydro generator ~1.0 T &nbsp;·&nbsp; motor ~1.2 T
-                                            </p>
+                                        {/* Peak flux density + Test level */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                    Peak flux density <span className="text-gray-400 font-normal">(B) Tesla</span>
+                                                </label>
+                                                <input type="number" step="any" min="0" value={gFluxDensity}
+                                                    onChange={e => setGFluxDensity(e.target.value)}
+                                                    placeholder="e.g. 1.2"
+                                                    className={stdInput} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                    Test level <span className="text-gray-400 font-normal">(X %)</span>
+                                                </label>
+                                                <input type="number" step="any" min="0.1" max="100" value={gTestLevel}
+                                                    onChange={e => setGTestLevel(e.target.value)}
+                                                    placeholder="4"
+                                                    className={optInput} />
+                                                <p className="text-xs text-gray-400 mt-1">
+                                                    Typical: 4%
+                                                </p>
+                                            </div>
                                         </div>
+                                        <p className="text-xs text-gray-400 -mt-1">
+                                            Typical B: turbo generator ~1.4 T &nbsp;·&nbsp; hydro generator ~1.0 T &nbsp;·&nbsp; motor ~1.2 T
+                                        </p>
                                     </div>
 
                                     {/* Method 2 derived display (shown if enough data) */}
@@ -1401,7 +1435,10 @@
                                                     <span className="text-lg font-bold text-indigo-700">{gResult.Vt.toFixed(3)} V</span>
                                                 </div>
                                             </div>
-                                            <VmRangeGuide vtPerMeter={gResult.vtPerMeter} />
+                                            <p className="text-xs text-gray-500 mt-2 italic">
+                                                V/m check below scaled to {gResult.testLevel}% test level ({(gResult.testLevel / 100).toFixed(2)}×)
+                                            </p>
+                                            <VmRangeGuide vtPerMeter={gResult.vtPerMeterAtTestLevel} />
                                         </div>
                                     )}
 
